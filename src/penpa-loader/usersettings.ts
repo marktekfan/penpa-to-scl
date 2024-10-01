@@ -1,5 +1,5 @@
 
-class UserSettings {
+export class UserSettings {
     static loadFromCookies() {};
     static tab_settings = [];
     static gridtype = '';

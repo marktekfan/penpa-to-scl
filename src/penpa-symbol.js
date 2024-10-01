@@ -1,91 +1,88 @@
 import { Color, set_line_style, set_font_style, set_circle_style } from './penpa-style';
 import { PenpaTools } from './penpa-tools';
-import { PenpaToSclConverter } from './penpa-to-scl';
 
-export const PenpaSymbol = (() => {
-	function _constructor(puinfo, puzzle, size, decoder) {
+const shape_map1 = {
+	circle_L: { s1: 0.43, s2: 0.32 },
+	circle_M: { s1: 0.35, s2: 0.25 },
+	circle_S: { s1: 0.22, s2: 0.14 },
+	circle_SS: { s1: 0.13, s2: 0.07 },
+	square_LL: { s1: 0.5 },
+	square_L: { s1: 0.4 },
+	square_M: { s1: 0.35 },
+	square_S: { s1: 0.22 },
+	square_SS: { s1: 0.13 },
+	triup_L: { s1: 0, s2: 0.5, r: 0.5, n: 3, a: 90 },
+	triup_M: { s1: 0, s2: 0.4, r: 0.4, n: 3, a: 90 },
+	triup_S: { s1: 0, s2: 0.25, r: 0.25, n: 3, a: 90 },
+	triup_SS: { s1: 0, s2: 0.16, r: 0.16, n: 3, a: 90 },
+	tridown_L: { s1: 0, s2: -0.5, r: 0.5, n: 3, a: -90 },
+	tridown_M: { s1: 0, s2: -0.4, r: 0.4, n: 3, a: -90 },
+	tridown_S: { s1: 0, s2: -0.25, r: 0.25, n: 3, a: -90 },
+	tridown_SS: { s1: 0, s2: -0.16, r: 0.16, n: 3, a: -90 },
+	triright_L: { s1: -0.5, s2: 0, r: 0.5, n: 3, a: 180 },
+	triright_M: { s1: -0.4, s2: 0, r: 0.4, n: 3, a: 180 },
+	triright_S: { s1: -0.25, s2: 0, r: 0.25, n: 3, a: 180 },
+	triright_SS: { s1: -0.16, s2: 0, r: 0.16, n: 3, a: 180 },
+	trileft_L: { s1: 0.5, s2: 0, r: 0.5, n: 3, a: 0 },
+	trileft_M: { s1: 0.4, s2: 0, r: 0.4, n: 3, a: 0 },
+	trileft_S: { s1: 0.25, s2: 0, r: 0.25, n: 3, a: 0 },
+	trileft_SS: { s1: 0.16, s2: 0, r: 0.16, n: 3, a: 0 },
+	diamond_L: { s1: 0, s2: 0, r: 0.43, n: 4, a: 0 },
+	diamond_M: { s1: 0, s2: 0, r: 0.35, n: 4, a: 0 },
+	diamond_S: { s1: 0, s2: 0, r: 0.22, n: 4, a: 0 },
+	diamond_SS: { s1: 0, s2: 0, r: 0.13, n: 4, a: 0 },
+	hexpoint_LL: { s1: 0, s2: 0, r: 0.48, n: 6, a: 30 },
+	hexpoint_L: { s1: 0, s2: 0, r: 0.4, n: 6, a: 30 },
+	hexpoint_M: { s1: 0, s2: 0, r: 0.3, n: 6, a: 30 },
+	hexpoint_S: { s1: 0, s2: 0, r: 0.2, n: 6, a: 30 },
+	hexpoint_SS: { s1: 0, s2: 0, r: 0.13, n: 6, a: 30 },
+	hexflat_LL: { s1: 0, s2: 0, r: 0.48, n: 6, a: 0 },
+	hexflat_L: { s1: 0, s2: 0, r: 0.4, n: 6, a: 0 },
+	hexflat_M: { s1: 0, s2: 0, r: 0.3, n: 6, a: 0 },
+	hexflat_S: { s1: 0, s2: 0, r: 0.2, n: 6, a: 0 },
+	hexflat_SS: { s1: 0, s2: 0, r: 0.13, n: 6, a: 0 },
+};
+const arrow_map1 = {
+	arrow_B_B: { circle_style: 2, fn: 'draw_arrowB' },
+	arrow_B_G: { circle_style: 3, fn: 'draw_arrowB' },
+	arrow_B_W: { circle_style: 1, fn: 'draw_arrowB' },
+	arrow_N_B: { circle_style: 2, fn: 'draw_arrowN' },
+	arrow_N_G: { circle_style: 3, fn: 'draw_arrowN' },
+	arrow_N_W: { circle_style: 1, fn: 'draw_arrowN' },
+	arrow_S: { circle_style: 2, fn: 'draw_arrowS' },
+	arrow_GP: { circle_style: 2, fn: 'draw_arrowGP' },
+	arrow_GP_C: { circle_style: 2, fn: 'draw_arrowGP_C' },
+	arrow_Short: { circle_style: 2, fn: 'draw_arrowShort' },
+	arrow_tri_B: { circle_style: 2, fn: 'draw_arrowtri' },
+	arrow_tri_G: { circle_style: 3, fn: 'draw_arrowtri' },
+	arrow_tri_W: { circle_style: 1, fn: 'draw_arrowtri' },
+	arrow_cross: { circle_style: 2, fn: 'draw_arrowcross' },
+	arrow_eight: { circle_style: 2, fn: 'draw_arroweight' },
+	arrow_fourtip: { circle_style: 2, fn: 'draw_arrowfourtip' },
+};
+const color_map = {
+	ox_B: Color.BLACK,
+	ox_E: Color.GREEN,
+	ox_G: Color.GREY,
+};
+const bar_map = {
+	bars_B: { fillStyle: Color.BLACK, strokeStyle: Color.BLACK },
+	bars_G: { fillStyle: Color.GREY_LIGHT, strokeStyle: Color.BLACK },
+	bars_W: { fillStyle: Color.WHITE, strokeStyle: Color.BLACK },
+};
+
+export class PenpaSymbol {
+	constructor(puinfo, puzzle, size, decoder) {
 		this.pu = puinfo.pu;
 		this.flags = puinfo.flags;
 		this.penpaTools = puinfo.penpaTools;
 		this.puzzle = puzzle;
 		this.size = size;
 		this.decoder = decoder;
-		this.isDoubleLayer = ctx => this.flags.doubleLayer && PenpaTools.ColorIsVisible(ctx.fillStyle) && !PenpaTools.ColorIsOpaque(ctx.fillStyle);
+		this.isDoubleLayer = (ctx) => this.flags.doubleLayer && PenpaTools.ColorIsVisible(ctx.fillStyle) && !PenpaTools.ColorIsOpaque(ctx.fillStyle);
 	}
-	const C = _constructor,
-		P = Object.assign(C.prototype, { constructor: C });
 
-	const shape_map1 = {
-		circle_L: { s1: 0.43, s2: 0.32 },
-		circle_M: { s1: 0.35, s2: 0.25 },
-		circle_S: { s1: 0.22, s2: 0.14 },
-		circle_SS: { s1: 0.13, s2: 0.07 },
-		square_LL: { s1: 0.5 },
-		square_L: { s1: 0.4 },
-		square_M: { s1: 0.35 },
-		square_S: { s1: 0.22 },
-		square_SS: { s1: 0.13 },
-		triup_L: { s1: 0, s2: 0.5, r: 0.5, n: 3, a: 90 },
-		triup_M: { s1: 0, s2: 0.4, r: 0.4, n: 3, a: 90 },
-		triup_S: { s1: 0, s2: 0.25, r: 0.25, n: 3, a: 90 },
-		triup_SS: { s1: 0, s2: 0.16, r: 0.16, n: 3, a: 90 },
-		tridown_L: { s1: 0, s2: -0.5, r: 0.5, n: 3, a: -90 },
-		tridown_M: { s1: 0, s2: -0.4, r: 0.4, n: 3, a: -90 },
-		tridown_S: { s1: 0, s2: -0.25, r: 0.25, n: 3, a: -90 },
-		tridown_SS: { s1: 0, s2: -0.16, r: 0.16, n: 3, a: -90 },
-		triright_L: { s1: -0.5, s2: 0, r: 0.5, n: 3, a: 180 },
-		triright_M: { s1: -0.4, s2: 0, r: 0.4, n: 3, a: 180 },
-		triright_S: { s1: -0.25, s2: 0, r: 0.25, n: 3, a: 180 },
-		triright_SS: { s1: -0.16, s2: 0, r: 0.16, n: 3, a: 180 },
-		trileft_L: { s1: 0.5, s2: 0, r: 0.5, n: 3, a: 0 },
-		trileft_M: { s1: 0.4, s2: 0, r: 0.4, n: 3, a: 0 },
-		trileft_S: { s1: 0.25, s2: 0, r: 0.25, n: 3, a: 0 },
-		trileft_SS: { s1: 0.16, s2: 0, r: 0.16, n: 3, a: 0 },
-		diamond_L: { s1: 0, s2: 0, r: 0.43, n: 4, a: 0 },
-		diamond_M: { s1: 0, s2: 0, r: 0.35, n: 4, a: 0 },
-		diamond_S: { s1: 0, s2: 0, r: 0.22, n: 4, a: 0 },
-		diamond_SS: { s1: 0, s2: 0, r: 0.13, n: 4, a: 0 },
-		hexpoint_LL: { s1: 0, s2: 0, r: 0.48, n: 6, a: 30 },
-		hexpoint_L: { s1: 0, s2: 0, r: 0.4, n: 6, a: 30 },
-		hexpoint_M: { s1: 0, s2: 0, r: 0.3, n: 6, a: 30 },
-		hexpoint_S: { s1: 0, s2: 0, r: 0.2, n: 6, a: 30 },
-		hexpoint_SS: { s1: 0, s2: 0, r: 0.13, n: 6, a: 30 },
-		hexflat_LL: { s1: 0, s2: 0, r: 0.48, n: 6, a: 0 },
-		hexflat_L: { s1: 0, s2: 0, r: 0.4, n: 6, a: 0 },
-		hexflat_M: { s1: 0, s2: 0, r: 0.3, n: 6, a: 0 },
-		hexflat_S: { s1: 0, s2: 0, r: 0.2, n: 6, a: 0 },
-		hexflat_SS: { s1: 0, s2: 0, r: 0.13, n: 6, a: 0 },
-	};
-	const arrow_map1 = {
-		arrow_B_B: { circle_style: 2, fn: 'draw_arrowB' },
-		arrow_B_G: { circle_style: 3, fn: 'draw_arrowB' },
-		arrow_B_W: { circle_style: 1, fn: 'draw_arrowB' },
-		arrow_N_B: { circle_style: 2, fn: 'draw_arrowN' },
-		arrow_N_G: { circle_style: 3, fn: 'draw_arrowN' },
-		arrow_N_W: { circle_style: 1, fn: 'draw_arrowN' },
-		arrow_S: { circle_style: 2, fn: 'draw_arrowS' },
-		arrow_GP: { circle_style: 2, fn: 'draw_arrowGP' },
-		arrow_GP_C: { circle_style: 2, fn: 'draw_arrowGP_C' },
-		arrow_Short: { circle_style: 2, fn: 'draw_arrowShort' },
-		arrow_tri_B: { circle_style: 2, fn: 'draw_arrowtri' },
-		arrow_tri_G: { circle_style: 3, fn: 'draw_arrowtri' },
-		arrow_tri_W: { circle_style: 1, fn: 'draw_arrowtri' },
-		arrow_cross: { circle_style: 2, fn: 'draw_arrowcross' },
-		arrow_eight: { circle_style: 2, fn: 'draw_arroweight' },
-		arrow_fourtip: { circle_style: 2, fn: 'draw_arrowfourtip' },
-	};
-	const color_map = {
-		ox_B: Color.BLACK,
-		ox_E: Color.GREEN,
-		ox_G: Color.GREY,
-	};
-	const bar_map = {
-		bars_B: { fillStyle: Color.BLACK, strokeStyle: Color.BLACK },
-		bars_G: { fillStyle: Color.GREY_LIGHT, strokeStyle: Color.BLACK },
-		bars_W: { fillStyle: Color.WHITE, strokeStyle: Color.BLACK },
-	};
-
-	P.draw_symbol = function (ctx, x, y, num, sym, cc) {
+	draw_symbol(ctx, x, y, num, sym, cc) {
 		switch (sym) {
 			case 'circle_L':
 			case 'circle_M':
@@ -369,7 +366,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.puzzleAddLines = function (ctx, note) {
+	puzzleAddLines(ctx, note) {
 		const { round1, round3, ColorIsVisible, getMinMaxRC } = PenpaTools;
 		let { lineWidth, fillStyle, strokeStyle } = ctx;
 		let wp = ctx.convertPathToWaypoints();
@@ -419,7 +416,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_number = function (ctx, number, p) {
+	draw_number(ctx, number, p) {
 		const { point2RC } = this.penpaTools;
 		let text = String(number[0]).trim();
 		let factor = 'abcdefghijklmnopqrstuvwxyz'.indexOf(text) === -1 ? 1 : 0;
@@ -618,7 +615,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_numberS = function (ctx, number, p) {
+	draw_numberS(ctx, number, p) {
 		const { point2RC } = this.penpaTools;
 		let rc = point2RC(p);
 		if (number[1] === 5) {
@@ -650,7 +647,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_numbercircle = function (ctx, number, i, p_x, p_y, size) {
+	draw_numbercircle(ctx, number, i, p_x, p_y, size) {
 		if (number[1] === 5) {
 			//WHITE no border
 			set_circle_style(ctx, 7);
@@ -670,7 +667,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_numbercircle_elem = function (ctx, x, y, r) {
+	draw_numbercircle_elem(ctx, x, y, r) {
 		const { round3 } = PenpaTools;
 		// Make opaque
 		ctx.fillStyle = PenpaTools.toHexColor(ctx.fillStyle, 1);
@@ -688,7 +685,7 @@ export const PenpaSymbol = (() => {
 		this.decoder.puzzleAdd(this.puzzle, 'overlays', opts, 'number circle');
 	};
 
-	P.draw_rect = function (ctx, x, y, w, h) {
+	draw_rect(ctx, x, y, w, h) {
 		ctx.beginPath();
 		ctx.moveTo(x - w * 0.5, y - h * 0.5);
 		ctx.lineTo(x + w * 0.5, y - h * 0.5);
@@ -699,14 +696,14 @@ export const PenpaSymbol = (() => {
 		ctx.stroke();
 	};
 
-	P.draw_circle = function (ctx, x, y, r) {
+	draw_circle(ctx, x, y, r) {
 		ctx.beginPath();
 		ctx.arc(x, y, r, 0, Math.PI * 2, false);
 		ctx.fill();
 		ctx.stroke();
 	};
 
-	P.draw_rect_elem = function (ctx, x, y, w, h, note) {
+	draw_rect_elem(ctx, x, y, w, h, note) {
 		const { round3 } = PenpaTools;
 		// Make opaque
 		ctx.fillStyle = PenpaTools.toHexColor(ctx.fillStyle, 1);
@@ -723,7 +720,7 @@ export const PenpaSymbol = (() => {
 		this.decoder.puzzleAdd(this.puzzle, 'underlays', opts, note);
 	};
 
-	P.draw_circle_elem = function (ctx, x, y, r, note) {
+	draw_circle_elem(ctx, x, y, r, note) {
 		const { round3 } = PenpaTools;
 		// Make opaque
 		ctx.fillStyle = PenpaTools.toHexColor(ctx.fillStyle, 1);
@@ -741,7 +738,7 @@ export const PenpaSymbol = (() => {
 		this.decoder.puzzleAdd(this.puzzle, 'underlays', opts, note);
 	};
 
-	P.draw_polygon = function (ctx, x, y, r, n, th) {
+	draw_polygon(ctx, x, y, r, n, th) {
 		if (n === 4) {
 			if (th !== 45) {
 				ctx.angle = 45 - th;
@@ -761,7 +758,7 @@ export const PenpaSymbol = (() => {
 		this.puzzleAddLines(ctx, 'polygon');
 	};
 
-	P.draw_slash = function (ctx, x, y, r) {
+	draw_slash(ctx, x, y, r) {
 		var th;
 		th = 45 + (this.pu.theta % 180);
 		ctx.beginPath();
@@ -770,7 +767,7 @@ export const PenpaSymbol = (() => {
 		ctx.stroke();
 	};
 
-	P.draw_ox = function (ctx, num, x, y) {
+	draw_ox(ctx, num, x, y) {
 		var r = 0.3;
 		ctx.target = 'overlay';
 		switch (num) {
@@ -820,7 +817,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_x = function (ctx, x, y, r) {
+	draw_x(ctx, x, y, r) {
 		ctx.beginPath();
 		ctx.moveTo(x + r * Math.cos(45 * (Math.PI / 180)), y + r * Math.sin(45 * (Math.PI / 180)));
 		ctx.lineTo(x + r * Math.cos(225 * (Math.PI / 180)), y + r * Math.sin(225 * (Math.PI / 180)));
@@ -833,7 +830,7 @@ export const PenpaSymbol = (() => {
 		ctx.stroke();
 	};
 
-	P.draw_tri = function (ctx, num, x, y, ccolor = 'none') {
+	draw_tri(ctx, num, x, y, ccolor = 'none') {
 		var r = 0.5,
 			th,
 			th1,
@@ -893,7 +890,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_cross = function (ctx, num, x, y) {
+	draw_cross(ctx, num, x, y) {
 		const lineWidth = ctx.lineWidth / 32;
 		for (var i = 0; i < 4; i++) {
 			if (num[i] === 1) {
@@ -906,7 +903,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_linesym = function (ctx, num, x, y, ccolor = 'none') {
+	draw_linesym(ctx, num, x, y, ccolor = 'none') {
 		let r = 0.32;
 		const o = 0.13;
 		ctx.setLineDash([]);
@@ -1011,7 +1008,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_framelinesym = function (ctx, num, x, y, ccolor = 'none') {
+	draw_framelinesym(ctx, num, x, y, ccolor = 'none') {
 		var r = 0.32;
 		var r2 = 0.16;
 		var d = 0.08;
@@ -1163,7 +1160,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_bars = function (ctx, num, x, y) {
+	draw_bars(ctx, num, x, y) {
 		switch (num) {
 			case 1:
 				this.draw_rect_elem(ctx, x, y, 0.14, 0.7);
@@ -1180,7 +1177,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_inequality = function (ctx, num, x, y) {
+	draw_inequality(ctx, num, x, y) {
 		var th;
 		var len = 0.14;
 		switch (num) {
@@ -1215,7 +1212,7 @@ export const PenpaSymbol = (() => {
 				break;
 		}
 	};
-	P.draw_math = function (ctx, num, x, y) {
+	draw_math(ctx, num, x, y) {
 		switch (num) {
 			case 1:
 				ctx.font = 0.7 + 'px sans-serif';
@@ -1255,7 +1252,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_degital = function (ctx, num, x, y) {
+	draw_degital(ctx, num, x, y) {
 		ctx.lineCap = 'round';
 		ctx.lineWidth = 4;
 		var w1, w2, w3, w4, z1, z2, m;
@@ -1322,7 +1319,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_degital_f = function (ctx, num, x, y, ccolor = 'none') {
+	draw_degital_f(ctx, num, x, y, ccolor = 'none') {
 		set_line_style(ctx, 5);
 		ctx.strokeStyle = Color.GREY_LIGHT;
 
@@ -1340,7 +1337,7 @@ export const PenpaSymbol = (() => {
 		this.decoder.puzzleAdd(this.puzzle, 'lines', ctx.toOpts(), 'degital_f');
 	};
 
-	P.draw_dice = function (ctx, num, x, y) {
+	draw_dice(ctx, num, x, y) {
 		for (var i = 0; i < 9; i++) {
 			if (num[i] === 1) {
 				this.draw_circle_elem(ctx, x + ((i % 3) - 1) * 0.25, y + (((i / 3) | 0) - 1) * 0.25, 0.09);
@@ -1348,7 +1345,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_pills = function (ctx, num, x, y, ccolor = 'none') {
+	draw_pills(ctx, num, x, y, ccolor = 'none') {
 		var r = 0.15;
 		if (ccolor !== 'none') {
 			ctx.fillStyle = ccolor;
@@ -1385,7 +1382,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arrowB = function (ctx, num, x, y) {
+	draw_arrowB(ctx, num, x, y) {
 		var len1 = 0.38; //nemoto
 		var len2 = 0.4; //tip
 		var w1 = 0.2;
@@ -1394,7 +1391,7 @@ export const PenpaSymbol = (() => {
 		this.draw_arrow(ctx, num, x, y, len1, len2, w1, w2, ri);
 	};
 
-	P.draw_arrowN = function (ctx, num, x, y) {
+	draw_arrowN(ctx, num, x, y) {
 		var len1 = 0.38; //nemoto
 		var len2 = 0.4; //tip
 		var w1 = 0.035; //0.03;
@@ -1403,7 +1400,7 @@ export const PenpaSymbol = (() => {
 		this.draw_arrow(ctx, num, x, y, len1, len2, w1, w2, ri);
 	};
 
-	P.draw_arrowS = function (ctx, num, x, y) {
+	draw_arrowS(ctx, num, x, y) {
 		var len1 = 0.3; //nemoto
 		var len2 = 0.32; //tip
 		var w1 = 0.03; //0.02;
@@ -1412,7 +1409,7 @@ export const PenpaSymbol = (() => {
 		this.draw_arrow(ctx, num, x, y, len1, len2, w1, w2, ri);
 	};
 
-	P.draw_arrow = function (ctx, num, x, y, len1, len2, w1, w2, ri, useTheta = 1) {
+	draw_arrow(ctx, num, x, y, len1, len2, w1, w2, ri, useTheta = 1) {
 		var th;
 		if (num > 0 && num <= 8) {
 			th = this.rotate_theta((num - 1) * 45 - 180, useTheta);
@@ -1423,7 +1420,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arrowGP = function (ctx, num, x, y) {
+	draw_arrowGP(ctx, num, x, y) {
 		var len1 = 0.35; //nemoto
 		var len2 = 0.35; //tip
 		var w1 = 0.12;
@@ -1442,7 +1439,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arrowGP_C = function (ctx, num, x, y) {
+	draw_arrowGP_C(ctx, num, x, y) {
 		if (num > 0 && num <= 8) {
 			this.draw_circle_elem(ctx, x, y, 0.4);
 			var th = this.rotate_theta((num - 1) * 45 - 180);
@@ -1450,7 +1447,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arrowShort = function (ctx, num, x, y) {
+	draw_arrowShort(ctx, num, x, y) {
 		var len1 = 0.3; //nemoto
 		var len2 = 0.3; //tip
 		var w1 = 0.15;
@@ -1459,7 +1456,7 @@ export const PenpaSymbol = (() => {
 		this.draw_arrow(ctx, num, x, y, len1, len2, w1, w2, ri);
 	};
 
-	P.draw_arrowtri = function (ctx, num, x, y) {
+	draw_arrowtri(ctx, num, x, y) {
 		var len1 = 0.25; //nemoto
 		var len2 = 0.4; //tip
 		var w1 = 0;
@@ -1468,7 +1465,7 @@ export const PenpaSymbol = (() => {
 		this.draw_arrow(ctx, num, x, y, len1, len2, w1, w2, ri);
 	};
 
-	P.draw_arrowcross = function (ctx, num, x, y) {
+	draw_arrowcross(ctx, num, x, y) {
 		var w1 = 0.025;
 		var w2 = 0.12;
 		var len1 = 0.5 * w1; //nemoto
@@ -1496,7 +1493,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arroweight = function (ctx, num, x, y) {
+	draw_arroweight(ctx, num, x, y) {
 		var len1 = -0.2; //nemoto
 		var len2 = 0.45; //tip
 		var w1 = 0.032; //0.025;
@@ -1509,7 +1506,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arrow8 = function (ctx, num, x, y, len1, len2, w1, w2, ri) {
+	draw_arrow8(ctx, num, x, y, len1, len2, w1, w2, ri) {
 		var th;
 		if (num === 2 || num === 4 || num === 6 || num === 8) {
 			len1 *= 1.55;
@@ -1525,7 +1522,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arrowfourtip = function (ctx, num, x, y) {
+	draw_arrowfourtip(ctx, num, x, y) {
 		var len1 = 0.5; //nemoto
 		var len2 = -0.25; //tip
 		var w1 = 0.0;
@@ -1538,7 +1535,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arrow4 = function (ctx, num, x, y, len1, len2, w1, w2, ri) {
+	draw_arrow4(ctx, num, x, y, len1, len2, w1, w2, ri) {
 		var th;
 		if (num > 0 && num <= 4) {
 			th = this.rotate_theta((num - 1) * 90);
@@ -1550,7 +1547,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arrowfouredge = function (ctx, num, x, y) {
+	draw_arrowfouredge(ctx, num, x, y) {
 		var len1 = 0.5; //nemoto
 		var len2 = 0.5;
 		var w1 = 0.02;
@@ -1595,7 +1592,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_neighbors = function (ctx, num, x, y, ccolor = 'none') {
+	draw_neighbors(ctx, num, x, y, ccolor = 'none') {
 		var r = 0.85;
 		switch (num) {
 			case 1:
@@ -1612,7 +1609,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_kakuro = function (ctx, num, x, y, ccolor = 'none') {
+	draw_kakuro(ctx, num, x, y, ccolor = 'none') {
 		var th = (this.rotate_theta(45) * 180) / Math.PI;
 		switch (num) {
 			case 1:
@@ -1677,7 +1674,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_compass = function (ctx, num, x, y, ccolor = 'none') {
+	draw_compass(ctx, num, x, y, ccolor = 'none') {
 		switch (num) {
 			case 1:
 				var r = 0.5;
@@ -1714,7 +1711,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_tents = function (ctx, num, x, y, ccolor = 'none') {
+	draw_tents(ctx, num, x, y, ccolor = 'none') {
 		switch (num) {
 			case 1: // Tree
 				var r1;
@@ -1812,7 +1809,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_star = function (ctx, num, x, y, ccolor = 'none') {
+	draw_star(ctx, num, x, y, ccolor = 'none') {
 		var r1 = 0.38;
 		var r2 = 0.382 * r1;
 		switch (num) {
@@ -1927,7 +1924,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_star0 = function (ctx, x, y, r1, r2, n) {
+	draw_star0(ctx, x, y, r1, r2, n) {
 		var th1 = 90;
 		var th2 = th1 + 180 / n;
 		ctx.lineCap = 'round';
@@ -1944,7 +1941,7 @@ export const PenpaSymbol = (() => {
 		this.puzzleAddLines(ctx, 'star');
 	};
 
-	P.draw_battleship = function (ctx, num, x, y, color_type = 1, ccolor = 'none') {
+	draw_battleship(ctx, num, x, y, color_type = 1, ccolor = 'none') {
 		var r = 0.4;
 		var th;
 		switch (num) {
@@ -1998,7 +1995,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_battleship_tip = function (ctx, x, y, th) {
+	draw_battleship_tip(ctx, x, y, th) {
 		var r = 0.36;
 		th = this.rotate_theta(th);
 		ctx.beginPath();
@@ -2011,7 +2008,7 @@ export const PenpaSymbol = (() => {
 		this.puzzleAddLines(ctx, 'battleship_tip');
 	};
 
-	P.draw_battleshipplus = function (ctx, num, x, y) {
+	draw_battleshipplus(ctx, num, x, y) {
 		var r = 0.4;
 		var th;
 		switch (num) {
@@ -2030,7 +2027,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_battleship_tipplus = function (ctx, x, y, th) {
+	draw_battleship_tipplus(ctx, x, y, th) {
 		var r = 0.36;
 		th = this.rotate_theta(th);
 		ctx.beginPath();
@@ -2044,7 +2041,7 @@ export const PenpaSymbol = (() => {
 		this.puzzleAddLines(ctx, 'battleship_tip');
 	};
 
-	P.draw_angleloop = function (ctx, num, x, y, ccolor = 'none') {
+	draw_angleloop(ctx, num, x, y, ccolor = 'none') {
 		var r;
 		switch (num) {
 			case 1:
@@ -2077,7 +2074,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_firefly = function (ctx, num, x, y, ccolor = 'none') {
+	draw_firefly(ctx, num, x, y, ccolor = 'none') {
 		var r1 = 0.36,
 			r2 = 0.09;
 		ctx.setLineDash([]);
@@ -2102,7 +2099,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_sun_moon = function (ctx, num, x, y, ccolor = 'none') {
+	draw_sun_moon(ctx, num, x, y, ccolor = 'none') {
 		var r1 = 0.36,
 			r2 = 0.34;
 		switch (num) {
@@ -2139,7 +2136,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_pencils = function (ctx, num, x, y, ccolor = 'none') {
+	draw_pencils(ctx, num, x, y, ccolor = 'none') {
 		var r = 0.2,
 			th;
 		ctx.setLineDash([]);
@@ -2176,7 +2173,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_slovak = function (ctx, num, x, y, ccolor = 'none') {
+	draw_slovak(ctx, num, x, y, ccolor = 'none') {
 		var r = 0.09,
 			h = 0.37;
 		switch (num) {
@@ -2210,7 +2207,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_sudokuetc = function (ctx, num, x, y, ccolor = 'none') {
+	draw_sudokuetc(ctx, num, x, y, ccolor = 'none') {
 		const { round2 } = PenpaTools;
 		switch (num) {
 			case 1:
@@ -2287,7 +2284,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_sudokumore = function (ctx, num, x, y, ccolor = 'none') {
+	draw_sudokumore(ctx, num, x, y, ccolor = 'none') {
 		const bulbMap = {
 			1: { w: 2, h: 1 },
 			2: { w: 1, h: 2 },
@@ -2317,7 +2314,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_arc = function (ctx, num, x, y, ccolor = 'none') {
+	draw_arc(ctx, num, x, y, ccolor = 'none') {
 		var th1, th2, th2a;
 		ctx.setLineDash([]);
 		ctx.lineCap = 'butt';
@@ -2368,7 +2365,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_darts = function (ctx, num, x, y, ccolor = 'none') {
+	draw_darts(ctx, num, x, y, ccolor = 'none') {
 		set_circle_style(ctx, 13, ccolor);
 		if ((1 <= num, num <= 4)) {
 			for (var i = 1; i <= num; i++) {
@@ -2386,7 +2383,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_spans = function (ctx, num, x, y, ccolor = 'none') {
+	draw_spans(ctx, num, x, y, ccolor = 'none') {
 		var h = 0.15;
 		switch (num) {
 			case 1:
@@ -2408,7 +2405,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_polyomino = function (ctx, num, x, y, ccolor = 'none') {
+	draw_polyomino(ctx, num, x, y, ccolor = 'none') {
 		ctx.setLineDash([]);
 		if (ccolor !== 'none') {
 			ctx.fillStyle = ccolor;
@@ -2426,7 +2423,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.draw_polyhex = function (ctx, num, x, y, ccolor = 'none') {
+	draw_polyhex(ctx, num, x, y, ccolor = 'none') {
 		ctx.setLineDash([]);
 		if (ccolor !== 'none') {
 			ctx.fillStyle = ccolor;
@@ -2457,7 +2454,7 @@ export const PenpaSymbol = (() => {
 		}
 	};
 
-	P.rotate_theta = function (th, useTheta = 1) {
+	rotate_theta(th, useTheta = 1) {
 		if (useTheta) {
 			th = th + this.pu.theta;
 			if (this.pu.reflect[0] === -1) {
@@ -2470,6 +2467,4 @@ export const PenpaSymbol = (() => {
 		th = (th / 180) * Math.PI;
 		return th;
 	};
-
-	return C;
-})();
+}

@@ -1,7 +1,7 @@
 import { PenpaTools, type ReduceSurfacesPredicate } from './penpa-tools.js';
 import { PenpaSymbol } from './penpa-symbol.js';
 import { Color, set_surface_style, set_line_style } from './penpa-style.js';
-import { md5Digest } from './sudokupad/utilities.js';
+import { md5Digest } from './utilities.js';
 import { Ctx, DrawingContext } from './penpa-drawingcontext.js';
 import { PenpaRegions } from './penpa-regions.js';
 import { PenpaLoader } from './penpa-loader/penpa-loader.js';
