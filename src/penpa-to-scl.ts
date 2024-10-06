@@ -8,7 +8,7 @@ import { PenpaLoader } from './penpa-loader/penpa-loader.js';
 import tinycolor from 'tinycolor2';
 import { getPuSolution } from './penpa-solution.js';
 import { PenpaPostProcess, type PuInfo } from './penpa-postprocess.js';
-import { ConverterFlags, type FlagValues } from './converter-flags.js';
+import { PenpaConverterFlags, type PenpaFlagValues } from './penpa-converter-flags.js';
 import type { CellFeature, LineFeature, NumberFeature, PenpaPuzzle, Pu_qa } from './penpa-loader/penpa-puzzle.js';
 import { SclPuzzle } from './sclpuzzle.js';
 import type { SclCage, SclFeature } from './sclpuzzle.js';
@@ -248,10 +248,10 @@ function hasCommonEnd(pu: Pu_qa, idx: number, endpoint: number, feature: CellFea
 }
 
 export class PenpaToSclConverter {
-	flags: FlagValues;
+	flags: PenpaFlagValues;
 
-	constructor(flags?: FlagValues) {
-		this.flags = flags ?? new ConverterFlags().getFlagValues();
+	constructor(flags?: PenpaFlagValues) {
+		this.flags = flags ?? new PenpaConverterFlags().getFlagValues();
 	}
 
 	private isDoubleLayer = (ctx: Ctx) => (this.flags.doubleLayer || 0) && PenpaTools.ColorIsVisible(ctx.fillStyle) && !PenpaTools.ColorIsOpaque(ctx.fillStyle);

@@ -739,13 +739,13 @@ export class PenpaSymbol {
 	};
 
 	draw_polygon(ctx, x, y, r, n, th) {
-		if (n === 4) {
-			if (th !== 45) {
-				ctx.angle = 45 - th;
-			}
-			this.draw_rect_elem(ctx, x, y, r * 1.41, r * 1.41, 'polygon');
-			return;
-		}
+		// if (n === 4) {
+		// 	if (th !== 45) {
+		// 		ctx.angle = 45 - th;
+		// 	}
+		// 	this.draw_rect_elem(ctx, x, y, r * 1.41, r * 1.41, 'polygon');
+		// 	return;
+		// }
 		ctx.LineCap = 'round';
 		ctx.beginPath();
 		ctx.moveTo(x - r * Math.cos(th * (Math.PI / 180)), y - r * Math.sin(th * (Math.PI / 180)));

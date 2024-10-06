@@ -1,14 +1,14 @@
 import { PenpaTools } from './penpa-tools';
 import { PenpaRegions } from './penpa-regions';
 import { getPuSolution, getSolutionInfo, makeSolutionFromSolutionModeDigits } from './penpa-solution';
-import { type FlagValues } from './converter-flags';
+import { type PenpaFlagValues } from './penpa-converter-flags';
 import { Color } from './penpa-style';
 import tinycolor from 'tinycolor2';
 import type { PenpaPuzzle, Point, LineFeature, NumberFeature, SymbolFeature, SurfaceFeature, ColFeature, Pu_qa_col } from './penpa-loader/penpa-puzzle';
 
 export interface PuInfo {
 	pu: PenpaPuzzle;
-	flags: FlagValues;
+	flags: PenpaFlagValues;
 	penpaTools: PenpaTools;
 
 	// From PenpaPuzzle:
@@ -664,7 +664,7 @@ function addSolutionCellsToCenterlist(pu: PenpaPuzzle) {
 }
 
 export class PenpaPostProcess {
-	static postProcessPenpaPuzzle(pu: PenpaPuzzle, flags: FlagValues) {
+	static postProcessPenpaPuzzle(pu: PenpaPuzzle, flags: PenpaFlagValues) {
 
 		const puinfo: PuInfo = {
 			pu: pu,

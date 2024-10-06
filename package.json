@@ -1,16 +1,25 @@
 {
-  "name": "penpa-to-scl",
-  "version": "1.0.0",
-  "description": "Convert Penpa+ puzzle into SodukuPad scl type puzzle format",
-  "author": "Mark Langezaal <marktekfan@gmail.com> (https://jasonsturges.com)",
-  "homepage": "https://github.com/jasonsturges/vite-typescript-npm-package",
-  "repository": "github:marktekfan/vite-typescript-npm-package",
-  "license": "ISC",
+  "name": "@sudokupad/penpa-to-scl",
+  "version": "0.0.1-preview.2",
+  "description": "Convert Penpa+ puzzle to SodukuPad scl puzzle format",
+  "author": "Mark Langezaal <marktekfan@gmail.com>",
+  "homepage": "https://marktekfan.github.io/sudokupad-penpa-import",
+  "bugs": {
+    "url": "https://github.com/marktekfan/penpa-to-scl/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marktekfan/penpa-to-scl.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
   "keywords": [
-    "vite",
-    "typescript",
-    "npm",
-    "package"
+    "penpa",
+    "sudokupad",
+    "sudoku",
+    "puzzle"
   ],
   "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
